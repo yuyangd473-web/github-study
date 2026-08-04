@@ -1,9 +1,18 @@
 print("简单计算器")
 
 def calculate():
-    num1 = float(input("请输入第一个数字: "))
+    try:
+        num1 = float(input("请输入第一个数字: "))
+    except ValueError:
+        print("输入错误，请输入数字！")
+        return False
+
     operator = input("请输入运算符(+ - * /): ")
-    num2 = float(input("请输入第二个数字: "))
+    try:
+        num2 = float(input("请输入第二个数字: "))
+    except ValueError:
+        print("输入错误，请输入数字！")
+        return False
 
     if operator == "+":
         result = num1 + num2
@@ -24,12 +33,15 @@ def calculate():
         result = "错误：未知运算符"
 
     print("结果:", result)
-
+    return True
 while True:
-    calculate()
-   
+    success = calculate()
+
+    if not success:
+        continue
+
     again = input("是否继续计算？(y/n): ")
 
     if again.lower() != "y":
-         print("感谢使用简单计算器，再见！")
-         break
+        print("感谢使用简单计算器，再见！")
+        break
