@@ -27,6 +27,9 @@ def calculate():
 
 while True:
     calculate()
+   
     again = input("是否继续计算？(y/n): ")
-    if again.lower() != 'y':
-        break
+
+    if again.lower() != "y":
+         print("感谢使用简单计算器，再见！")
+         break
