@@ -1,6 +1,6 @@
 print("简单计算器")
 
-while True:
+def calculate():
     num1 = float(input("请输入第一个数字: "))
     operator = input("请输入运算符(+ - * /): ")
     num2 = float(input("请输入第二个数字: "))
@@ -24,3 +24,9 @@ while True:
         result = "错误：未知运算符"
 
     print("结果:", result)
+
+while True:
+    calculate()
+    again = input("是否继续计算？(y/n): ")
+    if again.lower() != 'y':
+        break
