@@ -1,18 +1,20 @@
 print("简单计算器")
+def get_number(prompt='请输入数字: '):
+    while True:
+        try:
+            return float(input(prompt))
+        except ValueError:
+            print('输入错误，请输入数字！')
 
-def calculate():
-    try:
-        num1 = float(input("请输入第一个数字: "))
-    except ValueError:
-        print("输入错误，请输入数字！")
-        return False
 
+def get_two_numbers():
+    num1 = get_number('请输入第一个数字: ')
+    num2 = get_number('请输入第二个数字: ')
+    return num1, num2
+
+
+def calculate(num1, num2):
     operator = input("请输入运算符(+ - * /): ")
-    try:
-        num2 = float(input("请输入第二个数字: "))
-    except ValueError:
-        print("输入错误，请输入数字！")
-        return False
 
     if operator == "+":
         result = num1 + num2
@@ -34,14 +36,18 @@ def calculate():
 
     print("结果:", result)
     return True
-while True:
-    success = calculate()
 
-    if not success:
-        continue
 
-    again = input("是否继续计算？(y/n): ")
+if __name__ == '__main__':
+    while True:
+        a, b = get_two_numbers()
+        success = calculate(a, b)
 
-    if again.lower() != "y":
-        print("感谢使用简单计算器，再见！")
-        break
+        if not success:
+            continue
+
+        again = input("是否继续计算？(y/n): ")
+
+        if again.lower() != "y":
+            print("感谢使用简单计算器，再见！")
+            break
