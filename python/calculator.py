@@ -14,7 +14,7 @@ def get_two_numbers():
 
 
 def calculate(num1, num2):
-    operator = input("请输入运算符(+ - * /): ")
+    operator = input("请输入运算符(+ - * /): ").strip()
 
     if operator == "+":
         result = num1 + num2
