@@ -29,11 +29,12 @@ def calculate(num1, num2):
         if num2 != 0:
             result = num1 / num2
         else:
-            result = "错误：不能除以0"
+            print("错误：不能除以0")
+            return False
 
     else:
-        result = "错误：未知运算符"
-
+        print("错误：未知运算符")
+        return False
     print("结果:", result)
     return True
 
