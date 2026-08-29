@@ -1,4 +1,5 @@
 print("简单计算器")
+
 def get_number(prompt='请输入数字: '):
     while True:
         try:
@@ -30,13 +31,16 @@ def calculate(num1, num2):
             result = num1 / num2
         else:
             print("错误：不能除以0")
-            return None,None
+            return None, None
 
     else:
         print("错误：未知运算符")
-        return None,None
+        return None, None
+
     print("结果:", result)
-    return result,operator
+    return result, operator
+
+
 def show_history(history):
     if not history:
         print("没有历史记录。")
@@ -45,8 +49,11 @@ def show_history(history):
     print("\n历史记录:")
     for i, (num1, operator, num2, result) in enumerate(history, start=1):
         print(f"{i}: {num1} {operator} {num2} = {result}")
+
+
 if __name__ == '__main__':
     history = []
+
     while True:
         a, b = get_two_numbers()
         result, operator = calculate(a, b)
@@ -55,10 +62,20 @@ if __name__ == '__main__':
             continue
 
         history.append((a, operator, b, result))
-        again = input("是否继续计算？(y/h/n): ")
+
+        again = input("是否继续计算？(y/h/c/n): ")
 
         if again.lower() == "h":
             show_history(history)
+
+        elif again.lower() == "c":
+            history.clear()
+            print("历史记录已清空。")
+
         elif again.lower() == "n":
             print("感谢使用简单计算器，再见！")
             break
+
+        else:
+            print("输入错误，请输入 y、h、c 或 n。")
+
