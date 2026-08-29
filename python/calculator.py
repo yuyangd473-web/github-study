@@ -99,4 +99,25 @@ if __name__ == '__main__':
         else:
             print("输入错误，请输入 1、2、3、4 或 5。")
 
-   
+def check_easter_eggs(choice):
+        # 检查彩蛋
+        if choice.lower() == "dyy":
+            print("彩蛋: 你好，dyy！感谢使用这个计算器。")
+        elif choice.lower() == "python":
+            print("彩蛋: Python 是一门很棒的编程语言！")
+        elif choice.lower() == "calculator":
+            print("彩蛋: 你正在使用一个简单的计算器程序。")
+def check_easter_eggs(result):
+    # 检查彩蛋
+    if result == 42:
+        print("彩蛋: 42 是生命、宇宙以及一切的答案！")
+    elif result == 3.14:
+        print("彩蛋: 3.14 是圆周率的近似值！")
+    elif result == 0:
+        print("彩蛋: 0 是一个神奇的数字！")
+    if result == 67:
+         print("Six Seven!!!")
+    elif result == 114514:
+         print("1919810")
+    elif result == 1919810:
+         print("114514") 
