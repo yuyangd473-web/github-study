@@ -107,7 +107,7 @@ def get_two_numbers():
 
 
 def calculate(num1, num2):
-    operator = input("请输入运算符(+ - * /): ").strip()
+    operator = input("请输入运算符(+ - * / % // **): ").strip()
 
     if operator == "+":
         result = num1 + num2
@@ -125,12 +125,32 @@ def calculate(num1, num2):
             print("错误:不能除以0")
             return None, None
 
+    elif operator == "%":
+        if num2 != 0:
+            result = num1 % num2
+        else:
+            print("错误:不能对0取模")
+            return None, None
+
+    elif operator == "//":
+        if num2 != 0:
+            result = num1 // num2
+        else:
+            print("错误:不能除以0")
+            return None, None
+
+    elif operator == "**":
+        result = num1 ** num2
+
     else:
         print("错误：未知运算符")
         return None, None
 
     print("结果:", format_number(result))
     return result, operator
+
+
+
 
 
 def show_history(history):
