@@ -23,7 +23,7 @@ def check_easter_eggs(result):
         print(" 3.14 是圆周率的近似值！")
     elif result == 0:
         print(" 0 是一个神奇的数字！")
-    if result == 67:
+    elif result == 67:
          print("Six Seven!!!")
     elif result == 69:
         print("Nice.")
@@ -55,6 +55,37 @@ def check_count_easter_egg(count):
 
     elif count == 30:
         print("30 次。你的计算能力正在觉醒。")
+
+    elif count == 40:
+        print("40 次。计算器已经成为你的好朋友。")
+
+    elif count == 50:
+        print("50 次！半百达成！")
+
+    elif count == 60:
+        print("60 次。你还在坚持。")
+
+    elif count == 70:
+        print("70 次。计算能力 MAX!")
+
+    elif count == 80:
+        print("80 次。你真的很喜欢算东西。")
+
+    elif count == 90:
+        print("90 次。距离 100 次只差一步！")
+
+    elif count == 100:
+        print("100 次！！！里程碑达成！")
+
+def check_error_easter_egg(count):
+    if count == 3:
+        print("连续错误 3 次。你还好吗？")
+
+    elif count == 5:
+        print("连续错误 5 次。计算器已经开始沉默。")
+
+    elif count == 10:
+        print("连续错误 10 次。建议检查一下你的输入。")
 
 def format_number(number):
     if number.is_integer():
@@ -114,7 +145,7 @@ def show_history(history):
 if __name__ == '__main__':
     history = []
     calculation_count = 0
-
+    error_count = 0
     while True:
         show_menu()
         choice = input("请输入选项: ")
@@ -124,11 +155,14 @@ if __name__ == '__main__':
             result, operator = calculate(a, b)
 
             if result is None:
+                error_count += 1
+                check_error_easter_egg(error_count)
                 continue
             check_easter_eggs(result)
             history.append((a, operator, b, result))
             calculation_count += 1
             check_count_easter_egg(calculation_count)
+            error_count = 0
         elif choice == "2":
             show_history(history)
         elif choice == "3":
