@@ -30,25 +30,35 @@ def calculate(num1, num2):
             result = num1 / num2
         else:
             print("错误：不能除以0")
-            return False
+            return None,None
 
     else:
         print("错误：未知运算符")
-        return False
+        return None,None
     print("结果:", result)
-    return True
+    return result,operator
+def show_history(history):
+    if not history:
+        print("没有历史记录。")
+        return
 
-
+    print("\n历史记录:")
+    for i, (num1, operator, num2, result) in enumerate(history, start=1):
+        print(f"{i}: {num1} {operator} {num2} = {result}")
 if __name__ == '__main__':
+    history = []
     while True:
         a, b = get_two_numbers()
-        success = calculate(a, b)
+        result, operator = calculate(a, b)
 
-        if not success:
+        if result is None:
             continue
 
-        again = input("是否继续计算？(y/n): ")
+        history.append((a, operator, b, result))
+        again = input("是否继续计算？(y/h/n): ")
 
-        if again.lower() != "y":
+        if again.lower() == "h":
+            show_history(history)
+        elif again.lower() == "n":
             print("感谢使用简单计算器，再见！")
             break
