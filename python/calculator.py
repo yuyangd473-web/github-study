@@ -1,5 +1,25 @@
 print("简单计算器")
 
+def show_about():
+    print("\n关于:")
+    print("这是一个简单的计算器程序，可以进行加、减、乘、除运算。")
+    print("你可以输入两个数字和一个运算符来计算结果。")
+    print("此外，你还可以查看历史记录或清空历史记录。")
+    print("版本1.0,作者: dyy,一个用于学习python的简单计算器项目")
+
+def show_menu():
+    print("\n请选择操作:")
+    print("1. 计算两个数字")
+    print("2. 查看历史记录")
+    print("3. 清空历史记录")
+    print("4. 关于")
+    print("5. 退出")
+
+def format_number(number):
+    if number.is_integer():
+        return str(int(number))
+    return f"{number:.6f}".rstrip('0').rstrip('.')
+
 def get_number(prompt='请输入数字: '):
     while True:
         try:
@@ -30,14 +50,14 @@ def calculate(num1, num2):
         if num2 != 0:
             result = num1 / num2
         else:
-            print("错误：不能除以0")
+            print("错误:不能除以0")
             return None, None
 
     else:
         print("错误：未知运算符")
         return None, None
 
-    print("结果:", result)
+    print("结果:", format_number(result))
     return result, operator
 
 
@@ -55,27 +75,27 @@ if __name__ == '__main__':
     history = []
 
     while True:
-        a, b = get_two_numbers()
-        result, operator = calculate(a, b)
+        show_menu()
+        choice = input("请输入选项: ")
 
-        if result is None:
-            continue
+        if choice == "1":
+            a, b = get_two_numbers()
+            result, operator = calculate(a, b)
 
-        history.append((a, operator, b, result))
-
-        again = input("是否继续计算？(y/h/c/n): ")
-
-        if again.lower() == "h":
+            if result is None:
+                continue
+            history.append((a, operator, b, result))
+        elif choice == "2":
             show_history(history)
-
-        elif again.lower() == "c":
+        elif choice == "3":
             history.clear()
             print("历史记录已清空。")
-
-        elif again.lower() == "n":
+        elif choice == "4":
+            show_about()
+        elif choice == "5":
             print("感谢使用简单计算器，再见！")
             break
-
         else:
-            print("输入错误，请输入 y、h、c 或 n。")
+            print("输入错误，请输入 1、2、3、4 或 5。")
 
+   
