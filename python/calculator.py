@@ -18,17 +18,43 @@ def show_menu():
 def check_easter_eggs(result):
     # 检查彩蛋
     if result == 42:
-        print("彩蛋: 42 是生命、宇宙以及一切的答案！")
+        print(" 42 是生命、宇宙以及一切的答案！")
     elif result == 3.14:
-        print("彩蛋: 3.14 是圆周率的近似值！")
+        print(" 3.14 是圆周率的近似值！")
     elif result == 0:
-        print("彩蛋: 0 是一个神奇的数字！")
+        print(" 0 是一个神奇的数字！")
     if result == 67:
          print("Six Seven!!!")
+    elif result == 69:
+        print("Nice.")
+    elif result == 404:
+        print("Error 404: Result Not Found.")
+    elif result == 666:
+         print("666,牛逼")
+    elif result == 777:
+        print("Lucky Seven!")
+    elif result == 233:
+         print("233,哈哈哈")
+    elif result == 2077:
+        print("Wake up, calculator.")
     elif result == 114514:
          print("1919810")
     elif result == 1919810:
-         print("114514")   
+         print("114514") 
+    elif result == 123456:
+        print("Are you testing the calculator?")
+    elif result == 123456789:
+        print("Counting is easy.")
+
+def check_count_easter_egg(count):
+    if count == 10:
+        print("已经计算 10 次了！")
+
+    elif count == 20:
+        print("你似乎越来越依赖这个计算器了。")
+
+    elif count == 30:
+        print("30 次。你的计算能力正在觉醒。")
 
 def format_number(number):
     if number.is_integer():
@@ -87,6 +113,7 @@ def show_history(history):
 
 if __name__ == '__main__':
     history = []
+    calculation_count = 0
 
     while True:
         show_menu()
@@ -100,6 +127,8 @@ if __name__ == '__main__':
                 continue
             check_easter_eggs(result)
             history.append((a, operator, b, result))
+            calculation_count += 1
+            check_count_easter_egg(calculation_count)
         elif choice == "2":
             show_history(history)
         elif choice == "3":
@@ -110,9 +139,9 @@ if __name__ == '__main__':
         elif choice == "4":
             show_about()
         elif choice == "5":
+            print(f"总共进行了 {calculation_count} 次计算。")
             print("感谢使用简单计算器，再见！")
             break
         else:
             print("输入错误，请输入 1、2、3、4 或 5。")
-
-
+       
