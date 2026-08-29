@@ -68,8 +68,7 @@ def show_history(history):
 
     print("\n历史记录:")
     for i, (num1, operator, num2, result) in enumerate(history, start=1):
-        print(f"{i}: {num1} {operator} {num2} = {result}")
-
+       print(f"{i}: {format_number(num1)} {operator} {format_number(num2)} = {format_number(result)}")
 
 if __name__ == '__main__':
     history = []
@@ -88,8 +87,10 @@ if __name__ == '__main__':
         elif choice == "2":
             show_history(history)
         elif choice == "3":
-            history.clear()
-            print("历史记录已清空。")
+            again = input("是否清空历史记录？(y/n): ")
+            if again.lower() == "y":
+                history.clear()
+                print("历史记录已清空。")
         elif choice == "4":
             show_about()
         elif choice == "5":
