@@ -156,10 +156,18 @@ def calculate(num1, num2):
         if num1 < 0 and not num2.is_integer():
             print("错误:不能对负数进行非整数次幂")
             return None, None
-        result = num1 ** num2
+        try:
+            result = num1 ** num2
+        except OverflowError:
+            print("错误:数值过大")
+            return None, None
 
     else:
         print("错误：未知运算符")
+        return None, None
+
+    if not math.isfinite(result):
+        print("错误:结果为无穷大或非数值")
         return None, None
 
     print("结果:", format_number(result))
@@ -198,6 +206,13 @@ def _eval_ast(node):
         if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
             raise _ExpressionError("非法表达式")
         return float(node.value)
+
+    if isinstance(node, ast.Name):
+        if node.id == "pi":
+            return math.pi
+        if node.id == "e":
+            return math.e
+        raise _ExpressionError("非法表达式")
 
     if isinstance(node, ast.BinOp):
         left = _eval_ast(node.left)
@@ -239,15 +254,31 @@ def _eval_ast(node):
 
     if isinstance(node, ast.Call):
         if (isinstance(node.func, ast.Name)
-                and node.func.id in ("sqrt", "abs")
+                and node.func.id in ("sqrt", "abs", "sin", "cos", "tan", "log", "ln")
                 and len(node.args) == 1
                 and not node.keywords):
             value = _eval_ast(node.args[0])
-            if node.func.id == "sqrt":
+            name = node.func.id
+            if name == "sqrt":
                 if value < 0:
                     raise _ExpressionError("不能对负数开平方根")
                 return math.sqrt(value)
-            return abs(value)
+            if name == "abs":
+                return abs(value)
+            if name == "sin":
+                return math.sin(value)
+            if name == "cos":
+                return math.cos(value)
+            if name == "tan":
+                return math.tan(value)
+            if name == "log":
+                if value <= 0:
+                    raise _ExpressionError("log 的参数必须大于0")
+                return math.log10(value)
+            if name == "ln":
+                if value <= 0:
+                    raise _ExpressionError("ln 的参数必须大于0")
+                return math.log(value)
         raise _ExpressionError("非法表达式")
 
     raise _ExpressionError("非法表达式")
@@ -268,6 +299,16 @@ def evaluate_expression(expr):
         return None, None
     except OverflowError:
         print("错误:数值过大")
+        return None, None
+    except RecursionError:
+        print("错误:表达式过于复杂")
+        return None, None
+    except ValueError:
+        print("错误:参数超出定义域")
+        return None, None
+
+    if not math.isfinite(result):
+        print("错误:结果为无穷大或非数值")
         return None, None
 
     print("结果:", format_number(result))
