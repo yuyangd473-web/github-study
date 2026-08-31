@@ -140,6 +140,9 @@ def calculate(num1, num2):
             return None, None
 
     elif operator == "**":
+        if num1 == 0 and num2 < 0:
+            print("错误:0的负数次幂")
+            return None, None
         result = num1 ** num2
 
     else:
