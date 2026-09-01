@@ -6,14 +6,12 @@ from pathlib import Path
 HISTORY_FILE = Path(__file__).resolve().parent / "history.json"
 EXPR_OPERATOR = "="
 
-print("简单计算器")
-
 def show_about():
     print("\n关于:")
     print("这是一个简单的计算器程序，可以进行加、减、乘、除运算。")
     print("你可以输入两个数字和一个运算符来计算结果。")
     print("此外，你还可以查看历史记录或清空历史记录。")
-    print("版本1.0,作者: dyy,一个用于学习python的简单计算器项目")
+    print("版本1.2,作者: dyy,一个用于学习python的简单计算器项目")
 
 def show_menu():
     print("\n请选择操作:")
@@ -23,7 +21,9 @@ def show_menu():
     print("4. 关于")
     print("5. 单个数运算 (sqrt / abs)")
     print("6. 表达式计算")
-    print("7. 退出")
+    print("7. 删除历史记录")
+    print("8. 撤销上一条历史记录")
+    print("9. 退出")
 
 def check_easter_eggs(result):
     # 检查彩蛋
@@ -192,6 +192,10 @@ def calculate_unary():
         result = math.sqrt(num)
     else:
         result = abs(num)
+
+    if not math.isfinite(result):
+        print("错误:结果为无穷大或非数值")
+        return None, None, None
 
     print("结果:", format_number(result))
     return result, operator, num
@@ -363,72 +367,229 @@ def save_history(history):
     except (OSError, ValueError):
         print("警告:历史记录保存失败。")
 
-if __name__ == '__main__':
+def delete_history_entry_at(history, index):
+    if not history:
+        print("没有历史记录。")
+        return None
+
+    if index < 1 or index > len(history):
+        print("错误:编号不存在。")
+        return None
+
+    removed = history.pop(index - 1)
+    save_history(history)
+    print(f"已删除第 {index} 条历史记录。")
+    show_history(history)
+    return removed
+
+def delete_history_entry(history):
+    if not history:
+        print("没有历史记录。")
+        return None
+
+    show_history(history)
+    choice = input("请输入要删除的编号: ").strip()
+
+    try:
+        index = int(choice)
+    except ValueError:
+        print("错误:请输入有效的编号。")
+        return None
+
+    return delete_history_entry_at(history, index)
+
+def undo_history(history):
+    if not history:
+        print("没有可撤销的历史记录。")
+        return None
+
+    removed = history.pop()
+    save_history(history)
+    print("已撤销上一条历史记录。")
+    show_history(history)
+    return removed
+
+COMMANDS = {"history", "undo", "delete", "clear", "help", "about", "exit", "quit", "menu"}
+
+def classify_line(line):
+    text = line.strip()
+    if not text:
+        return ("blank", None)
+
+    parts = text.split(maxsplit=1)
+    name = parts[0].lower()
+    rest = parts[1].strip() if len(parts) > 1 else ""
+
+    if name in COMMANDS:
+        return ("command", name, rest)
+    return ("expression", text)
+
+def run_command(history, name, rest):
+    if name == "history":
+        show_history(history)
+    elif name == "undo":
+        undo_history(history)
+    elif name == "delete":
+        if not rest:
+            print("用法: delete <编号>")
+        else:
+            try:
+                index = int(rest)
+            except ValueError:
+                print("错误:请输入有效的编号。")
+            else:
+                delete_history_entry_at(history, index)
+    elif name == "clear":
+        again = input("是否清空历史记录？(y/n): ")
+        if again.lower() == "y":
+            history.clear()
+            save_history(history)
+            print("历史记录已清空。")
+    elif name == "help":
+        print("可用命令:")
+        print("  history        查看历史记录")
+        print("  undo           撤销上一条历史记录")
+        print("  delete <编号>  删除指定历史记录")
+        print("  clear          清空历史记录")
+        print("  about          关于")
+        print("  menu           进入旧菜单")
+        print("  exit / quit    退出")
+        print("直接输入表达式即可计算，例如: 12 + 5、sqrt(144)")
+    elif name == "about":
+        show_about()
+    elif name == "exit":
+        return "exit"
+    elif name == "quit":
+        return "exit"
+    elif name == "menu":
+        return "menu"
+    return "continue"
+
+calculation_count = 0
+error_count = 0
+
+
+def handle_expression(history, line):
+    global calculation_count, error_count
+
+    expr = line.strip()
+    result, entry = evaluate_expression(expr)
+
+    if result is None:
+        error_count += 1
+        check_error_easter_egg(error_count)
+        return
+
+    check_easter_eggs(result)
+    history.append(entry)
+    save_history(history)
+    calculation_count += 1
+    check_count_easter_egg(calculation_count)
+    error_count = 0
+
+
+def run_menu_loop(history):
+    global calculation_count, error_count
+
+    while True:
+        show_menu()
+        choice = input("请输入选项: ")
+
+        if choice == "1":
+            a, b = get_two_numbers()
+            result, operator = calculate(a, b)
+
+            if result is None:
+                error_count += 1
+                check_error_easter_egg(error_count)
+                continue
+            check_easter_eggs(result)
+            history.append((a, operator, b, result))
+            save_history(history)
+            calculation_count += 1
+            check_count_easter_egg(calculation_count)
+            error_count = 0
+        elif choice == "2":
+            show_history(history)
+        elif choice == "3":
+            again = input("是否清空历史记录？(y/n): ")
+            if again.lower() == "y":
+                history.clear()
+                save_history(history)
+                print("历史记录已清空。")
+        elif choice == "4":
+            show_about()
+        elif choice == "5":
+            result, operator, num = calculate_unary()
+
+            if result is None:
+                error_count += 1
+                check_error_easter_egg(error_count)
+                continue
+            check_easter_eggs(result)
+            history.append((num, operator, None, result))
+            save_history(history)
+            calculation_count += 1
+            check_count_easter_egg(calculation_count)
+            error_count = 0
+        elif choice == "6":
+            expr = input("请输入表达式: ").strip()
+            result, entry = evaluate_expression(expr)
+
+            if result is None:
+                error_count += 1
+                check_error_easter_egg(error_count)
+                continue
+            check_easter_eggs(result)
+            history.append(entry)
+            save_history(history)
+            calculation_count += 1
+            check_count_easter_egg(calculation_count)
+            error_count = 0
+        elif choice == "7":
+            delete_history_entry(history)
+        elif choice == "8":
+            undo_history(history)
+        elif choice == "9":
+            return
+        else:
+            print("输入错误，请输入 1、2、3、4、5、6、7、8 或 9。")
+
+
+def run_cli():
+    global calculation_count, error_count
+
     history = load_history()
     calculation_count = 0
     error_count = 0
+
+    print("简单计算器")
+    print("输入 help 查看帮助。")
+
     try:
         while True:
-            show_menu()
-            choice = input("请输入选项: ")
+            line = input(">>> ")
 
-            if choice == "1":
-                a, b = get_two_numbers()
-                result, operator = calculate(a, b)
+            kind, *rest = classify_line(line)
 
-                if result is None:
-                    error_count += 1
-                    check_error_easter_egg(error_count)
-                    continue
-                check_easter_eggs(result)
-                history.append((a, operator, b, result))
-                save_history(history)
-                calculation_count += 1
-                check_count_easter_egg(calculation_count)
-                error_count = 0
-            elif choice == "2":
-                show_history(history)
-            elif choice == "3":
-                again = input("是否清空历史记录？(y/n): ")
-                if again.lower() == "y":
-                    history.clear()
-                    save_history(history)
-                    print("历史记录已清空。")
-            elif choice == "4":
-                show_about()
-            elif choice == "5":
-                result, operator, num = calculate_unary()
+            if kind == "blank":
+                continue
 
-                if result is None:
-                    error_count += 1
-                    check_error_easter_egg(error_count)
-                    continue
-                check_easter_eggs(result)
-                history.append((num, operator, None, result))
-                save_history(history)
-                calculation_count += 1
-                check_count_easter_egg(calculation_count)
-                error_count = 0
-            elif choice == "6":
-                expr = input("请输入表达式: ").strip()
-                result, entry = evaluate_expression(expr)
+            if kind == "command":
+                name, args = rest
+                action = run_command(history, name, args)
+                if action == "exit":
+                    print(f"总共进行了 {calculation_count} 次计算。")
+                    print("感谢使用简单计算器，再见！")
+                    return
+                if action == "menu":
+                    run_menu_loop(history)
+                continue
 
-                if result is None:
-                    error_count += 1
-                    check_error_easter_egg(error_count)
-                    continue
-                check_easter_eggs(result)
-                history.append(entry)
-                save_history(history)
-                calculation_count += 1
-                check_count_easter_egg(calculation_count)
-                error_count = 0
-            elif choice == "7":
-                print(f"总共进行了 {calculation_count} 次计算。")
-                print("感谢使用简单计算器，再见！")
-                break
-            else:
-                print("输入错误，请输入 1、2、3、4、5、6 或 7。")
+            handle_expression(history, line)
     except (EOFError, KeyboardInterrupt):
         print("\n感谢使用简单计算器，再见！")
-       
+
+
+if __name__ == '__main__':
+    run_cli()
