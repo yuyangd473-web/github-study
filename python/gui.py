@@ -28,11 +28,19 @@ COLOR_UTILITY_FG = "#374151"
 COLOR_MUTED = "#6B7280"
 COLOR_ERROR = "#DC2626"
 
-FONT_DISPLAY = ("Segoe UI Semibold", 34)
-FONT_SUB = ("Segoe UI", 11)
-FONT_KEY = ("Segoe UI", 18)
-FONT_FUNCTION = ("Segoe UI", 11)
-FONT_SECONDARY = ("Segoe UI", 11)
+FONT_FAMILY = "Segoe UI"
+FONT_FAMILY_BOLD = "Segoe UI Semibold"
+
+DISPLAY_SIZE_MAX = 18
+DISPLAY_SIZE_MIN = 12
+
+FONT_DISPLAY = (FONT_FAMILY_BOLD, DISPLAY_SIZE_MAX)
+FONT_SUB = (FONT_FAMILY, 11)
+FONT_EASTER = (FONT_FAMILY, 11)
+FONT_KEY = (FONT_FAMILY, 18)
+FONT_OPERATOR = (FONT_FAMILY_BOLD, 18)
+FONT_FUNCTION = (FONT_FAMILY, 11)
+FONT_SECONDARY = (FONT_FAMILY, 11)
 
 STYLES = {
     "digit": "Digit.TButton",
@@ -83,12 +91,14 @@ class CalculatorApp(tk.Tk):
 
         self.expression_var = tk.StringVar()
         self.status_var = tk.StringVar()
+        self.easter_var = tk.StringVar()
         self.expression_var.trace_add("write", self._on_expression_changed)
 
         self._setup_style()
         self._build_display()
         self._build_buttons()
         self._build_functions()
+        self._build_easter()
         self._build_bottom()
         self._bind_keys()
 
@@ -116,7 +126,7 @@ class CalculatorApp(tk.Tk):
             font=FONT_KEY,
             relief="flat",
             borderwidth=0,
-            padding=(0, 12),
+            padding=(0, 10),
         )
         style.map(
             "Digit.TButton",
@@ -127,10 +137,10 @@ class CalculatorApp(tk.Tk):
             "Operator.TButton",
             background=COLOR_OPERATOR_BG,
             foreground=COLOR_OPERATOR_FG,
-            font=FONT_KEY,
+            font=FONT_OPERATOR,
             relief="flat",
             borderwidth=0,
-            padding=(0, 12),
+            padding=(0, 10),
         )
         style.map(
             "Operator.TButton",
@@ -144,7 +154,7 @@ class CalculatorApp(tk.Tk):
             font=FONT_KEY,
             relief="flat",
             borderwidth=0,
-            padding=(0, 12),
+            padding=(0, 10),
         )
         style.map(
             "Equals.TButton",
@@ -158,7 +168,7 @@ class CalculatorApp(tk.Tk):
             font=FONT_KEY,
             relief="flat",
             borderwidth=0,
-            padding=(0, 12),
+            padding=(0, 10),
         )
         style.map(
             "Danger.TButton",
@@ -172,7 +182,7 @@ class CalculatorApp(tk.Tk):
             font=FONT_KEY,
             relief="flat",
             borderwidth=0,
-            padding=(0, 12),
+            padding=(0, 10),
         )
         style.map(
             "Utility.TButton",
@@ -250,6 +260,7 @@ class CalculatorApp(tk.Tk):
             ("sin", "token", "sin(", "function"),
             ("cos", "token", "cos(", "function"),
             ("tan", "token", "tan(", "function"),
+            ("°", "token", "°", "function"),
             ("log", "token", "log(", "function"),
             ("ln", "token", "ln(", "function"),
             ("//", "token", "//", "function"),
@@ -289,6 +300,16 @@ class CalculatorApp(tk.Tk):
             button.grid(row=0, column=c, sticky="nsew", padx=3, pady=3)
             frame.columnconfigure(c, weight=1)
 
+    def _build_easter(self):
+        self.easter_label = tk.Label(
+            self,
+            textvariable=self.easter_var,
+            bg=COLOR_BG,
+            fg=COLOR_MUTED,
+            font=FONT_EASTER,
+        )
+        self.easter_label.pack(fill="x", padx=14, pady=(0, 4))
+
     def _build_bottom(self):
         frame = ttk.Frame(self)
         frame.pack(fill="x", padx=14, pady=(4, 14))
@@ -300,6 +321,7 @@ class CalculatorApp(tk.Tk):
     def _bind_keys(self):
         self.display.bind("<Return>", lambda e: self.evaluate())
         self.display.bind("<Escape>", lambda e: self.clear())
+        self.display.bind("<BackSpace>", self._on_backspace_key)
 
     @staticmethod
     def _call(func, *args, **kwargs):
@@ -340,6 +362,27 @@ class CalculatorApp(tk.Tk):
 
     def _on_expression_changed(self, *args):
         self._result_shown = False
+        self._fit_display_font()
+
+    def _fit_display_font(self):
+        if not hasattr(self, "display"):
+            return
+        length = len(self.expression_var.get())
+        if length <= 8:
+            size = DISPLAY_SIZE_MAX
+        elif length <= 12:
+            size = 16
+        elif length <= 16:
+            size = 14
+        elif length <= 22:
+            size = 14
+        else:
+            size = DISPLAY_SIZE_MIN
+        self.display.configure(font=(FONT_FAMILY_BOLD, size))
+
+    def _on_backspace_key(self, event):
+        self.backspace()
+        return "break"
 
     def backspace(self):
         current = self.expression_var.get()
@@ -355,16 +398,21 @@ class CalculatorApp(tk.Tk):
         self._result_shown = False
         self.display.focus_set()
 
+    def _set_easter(self, messages):
+        self.easter_var.set(" ".join(message.strip() for message in messages))
+
     def evaluate(self):
         expr = self.expression_var.get().strip()
         if not expr:
             return
 
         (result, entry), output = self._call(calculator.evaluate_expression, expr)
+        messages = calculator.record_result(result)
 
         if result is None:
             self._set_sub("错误: " + self._extract_error(output), COLOR_ERROR)
             self._result_shown = False
+            self._set_easter(messages)
             return
 
         self.expression_var.set(calculator.format_number(result))
@@ -373,6 +421,7 @@ class CalculatorApp(tk.Tk):
         self.history.append(entry)
         self._call(calculator.save_history, self.history)
         self._refresh_open_history()
+        self._set_easter(messages)
 
     def open_history(self):
         if self._history_win is not None and self._history_win.winfo_exists():
@@ -388,7 +437,8 @@ class CalculatorApp(tk.Tk):
         list_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         scrollbar = ttk.Scrollbar(list_frame, orient="vertical")
-        listbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, height=15, width=48)
+        listbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, height=15, width=48,
+                             font=FONT_SECONDARY)
         scrollbar.config(command=listbox.yview)
         listbox.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")

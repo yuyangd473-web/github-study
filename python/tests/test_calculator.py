@@ -825,3 +825,208 @@ def test_run_cli_menu_error_count_continuity(tmp_path, monkeypatch, capsys):
     assert calculator.error_count == 2
     assert calculator.calculation_count == 0
     assert calculator.load_history() == []
+
+
+# ---------------------------------------------------------------------------
+# record_result：CLI / GUI 共享的彩蛋与计数机制
+# ---------------------------------------------------------------------------
+
+def test_record_result_success_increments_calculation(monkeypatch):
+    _reset_stats(monkeypatch)
+    calculator.record_result(5.0)
+    assert calculator.calculation_count == 1
+    assert calculator.error_count == 0
+
+
+def test_record_result_success_clears_error_count(monkeypatch):
+    _reset_stats(monkeypatch)
+    calculator.error_count = 3
+    calculator.record_result(5.0)
+    assert calculator.error_count == 0
+
+
+def test_record_result_easter_egg_42(monkeypatch):
+    _reset_stats(monkeypatch)
+    messages = calculator.record_result(42.0)
+    assert any("生命" in m for m in messages)
+
+
+def test_record_result_easter_egg_69(monkeypatch):
+    _reset_stats(monkeypatch)
+    messages = calculator.record_result(69.0)
+    assert any("Nice" in m for m in messages)
+
+
+def test_record_result_no_message_for_ordinary_result(monkeypatch):
+    _reset_stats(monkeypatch)
+    assert calculator.record_result(5.0) == []
+
+
+def test_record_result_tenth_calculation_egg(monkeypatch):
+    _reset_stats(monkeypatch)
+    for _ in range(9):
+        calculator.record_result(1.0)
+    messages = calculator.record_result(1.0)
+    assert calculator.calculation_count == 10
+    assert any("10 次" in m for m in messages)
+
+
+def test_record_result_error_increments_error_count(monkeypatch):
+    _reset_stats(monkeypatch)
+    assert calculator.record_result(None) == []
+    assert calculator.error_count == 1
+
+
+def test_record_result_error_egg_3(monkeypatch):
+    _reset_stats(monkeypatch)
+    calculator.record_result(None)
+    calculator.record_result(None)
+    messages = calculator.record_result(None)
+    assert calculator.error_count == 3
+    assert any("连续错误 3 次" in m for m in messages)
+
+
+def test_record_result_error_egg_5(monkeypatch):
+    _reset_stats(monkeypatch)
+    for _ in range(4):
+        calculator.record_result(None)
+    messages = calculator.record_result(None)
+    assert calculator.error_count == 5
+    assert any("连续错误 5 次" in m for m in messages)
+
+
+def test_record_result_error_egg_10(monkeypatch):
+    _reset_stats(monkeypatch)
+    for _ in range(9):
+        calculator.record_result(None)
+    messages = calculator.record_result(None)
+    assert calculator.error_count == 10
+    assert any("连续错误 10 次" in m for m in messages)
+
+
+# ---------------------------------------------------------------------------
+# ° 角度后缀
+# ---------------------------------------------------------------------------
+
+def _eval_expr(expr):
+    result, entry = calculator.evaluate_expression(expr)
+    return result
+
+
+@pytest.mark.parametrize(
+    "expr,expected",
+    [
+        ("30°", math.pi / 6),
+        ("90°", math.pi / 2),
+        ("180°", math.pi),
+        ("360°", 2 * math.pi),
+    ],
+)
+def test_degree_literal(expr, expected):
+    assert _eval_expr(expr) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "expr,expected",
+    [
+        ("sin(30°)", 0.5),
+        ("cos(60°)", 0.5),
+        ("tan(45°)", 1.0),
+    ],
+)
+def test_degree_trig(expr, expected):
+    assert _eval_expr(expr) == pytest.approx(expected)
+
+
+def test_degree_sqrt():
+    assert _eval_expr("sqrt(90°)") == pytest.approx(math.sqrt(math.pi / 2))
+
+
+@pytest.mark.parametrize(
+    "expr,expected",
+    [
+        ("sin(pi/2)", 1.0),
+        ("cos(0)", 1.0),
+    ],
+)
+def test_degree_radian_regression(expr, expected):
+    assert _eval_expr(expr) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "expr,expected",
+    [
+        ("30° + 30°", math.pi / 3),
+        ("sin(30°) + cos(60°)", 1.0),
+        ("sin(30°)**2", 0.25),
+        ("2**30°", 2 ** (math.pi / 6)),
+    ],
+)
+def test_degree_mixed(expr, expected):
+    assert _eval_expr(expr) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "expr,expected",
+    [
+        ("30.5°", 30.5 * math.pi / 180),
+        (".5°", 0.5 * math.pi / 180),
+        ("1e2°", 100.0 * math.pi / 180),
+    ],
+)
+def test_degree_number_formats(expr, expected):
+    assert _eval_expr(expr) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "expr,expected",
+    [
+        ("-30°", -math.pi / 6),
+        ("sin(-30°)", -0.5),
+    ],
+)
+def test_degree_negative(expr, expected):
+    assert _eval_expr(expr) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "expr,converted",
+    [
+        ("30°", "(30*pi/180)"),
+        ("sin(30°)", "sin((30*pi/180))"),
+        ("2**30°", "2**(30*pi/180)"),
+        ("30°**2", "(30*pi/180)**2"),
+        (".5°", "(.5*pi/180)"),
+        ("1e2°", "(1e2*pi/180)"),
+        ("pi", "pi"),
+    ],
+)
+def test_convert_degrees(expr, converted):
+    assert calculator._convert_degrees(expr) == converted
+
+
+@pytest.mark.parametrize(
+    "expr",
+    [
+        "°",
+        "30°°",
+        "sin(°30)",
+        "pi°",
+        "e°",
+        "(30)°",
+        "sin(30)°",
+        "30°.x",
+        "30°;__import__('os')",
+    ],
+)
+def test_degree_illegal(expr):
+    result, entry = calculator.evaluate_expression(expr)
+    assert result is None
+    assert entry is None
+
+
+@pytest.mark.parametrize("expr", ["sin30°", "cos45°", "sqrt9°", "log10°", "abs5°"])
+def test_degree_identifier_juxtaposition_rejected(expr):
+    result, entry = calculator.evaluate_expression(expr)
+    assert result is None
+    assert entry is None

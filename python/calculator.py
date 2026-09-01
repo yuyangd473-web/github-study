@@ -28,74 +28,66 @@ def show_menu():
 def check_easter_eggs(result):
     # 检查彩蛋
     if result == 42:
-        print(" 42 是生命、宇宙以及一切的答案！")
-    elif result == 3.14:
-        print(" 3.14 是圆周率的近似值！")
-    elif result == 0:
-        print(" 0 是一个神奇的数字！")
-    elif result == 67:
-         print("Six Seven!!!")
-    elif result == 69:
-        print("Nice.")
-    elif result == 404:
-        print("Error 404: Result Not Found.")
-    elif result == 666:
-         print("666,牛逼")
-    elif result == 777:
-        print("Lucky Seven!")
-    elif result == 233:
-         print("233,哈哈哈")
-    elif result == 2077:
-        print("Wake up, calculator.")
-    elif result == 114514:
-         print("1919810")
-    elif result == 1919810:
-         print("114514") 
-    elif result == 123456:
-        print("Are you testing the calculator?")
-    elif result == 123456789:
-        print("Counting is easy.")
+        return " 42 是生命、宇宙以及一切的答案！"
+    if result == 3.14:
+        return " 3.14 是圆周率的近似值！"
+    if result == 0:
+        return " 0 是一个神奇的数字！"
+    if result == 67:
+        return "Six Seven!!!"
+    if result == 69:
+        return "Nice."
+    if result == 404:
+        return "Error 404: Result Not Found."
+    if result == 666:
+        return "666,牛逼"
+    if result == 777:
+        return "Lucky Seven!"
+    if result == 233:
+        return "233,哈哈哈"
+    if result == 2077:
+        return "Wake up, calculator."
+    if result == 114514:
+        return "1919810"
+    if result == 1919810:
+        return "114514"
+    if result == 123456:
+        return "Are you testing the calculator?"
+    if result == 123456789:
+        return "Counting is easy."
+    return None
 
 def check_count_easter_egg(count):
     if count == 10:
-        print("已经计算 10 次了！")
-
-    elif count == 20:
-        print("你似乎越来越依赖这个计算器了。")
-
-    elif count == 30:
-        print("30 次。你的计算能力正在觉醒。")
-
-    elif count == 40:
-        print("40 次。计算器已经成为你的好朋友。")
-
-    elif count == 50:
-        print("50 次！半百达成！")
-
-    elif count == 60:
-        print("60 次。你还在坚持。")
-
-    elif count == 70:
-        print("70 次。计算能力 MAX!")
-
-    elif count == 80:
-        print("80 次。你真的很喜欢算东西。")
-
-    elif count == 90:
-        print("90 次。距离 100 次只差一步！")
-
-    elif count == 100:
-        print("100 次！！！里程碑达成！")
+        return "已经计算 10 次了！"
+    if count == 20:
+        return "你似乎越来越依赖这个计算器了。"
+    if count == 30:
+        return "30 次。你的计算能力正在觉醒。"
+    if count == 40:
+        return "40 次。计算器已经成为你的好朋友。"
+    if count == 50:
+        return "50 次！半百达成！"
+    if count == 60:
+        return "60 次。你还在坚持。"
+    if count == 70:
+        return "70 次。计算能力 MAX!"
+    if count == 80:
+        return "80 次。你真的很喜欢算东西。"
+    if count == 90:
+        return "90 次。距离 100 次只差一步！"
+    if count == 100:
+        return "100 次！！！里程碑达成！"
+    return None
 
 def check_error_easter_egg(count):
     if count == 3:
-        print("连续错误 3 次。你还好吗？")
-
-    elif count == 5:
-        print("连续错误 5 次。计算器已经开始沉默。")
-
-    elif count == 10:
-        print("连续错误 10 次。建议检查一下你的输入。")
+        return "连续错误 3 次。你还好吗？"
+    if count == 5:
+        return "连续错误 5 次。计算器已经开始沉默。"
+    if count == 10:
+        return "连续错误 10 次。建议检查一下你的输入。"
+    return None
 
 def format_number(number):
     if number.is_integer():
@@ -288,9 +280,62 @@ def _eval_ast(node):
     raise _ExpressionError("非法表达式")
 
 
+def _scan_number(expr, start):
+    i = start
+    n = len(expr)
+
+    if expr[i] == ".":
+        i += 1
+        while i < n and expr[i].isdigit():
+            i += 1
+    else:
+        while i < n and expr[i].isdigit():
+            i += 1
+        if i < n and expr[i] == ".":
+            i += 1
+            while i < n and expr[i].isdigit():
+                i += 1
+
+    if i < n and expr[i] in "eE":
+        j = i + 1
+        if j < n and expr[j] in "+-":
+            j += 1
+        if j < n and expr[j].isdigit():
+            i = j
+            while i < n and expr[i].isdigit():
+                i += 1
+
+    return i
+
+
+def _convert_degrees(expr):
+    out = []
+    i = 0
+    n = len(expr)
+
+    while i < n:
+        ch = expr[i]
+        if ch.isdigit() or (ch == "." and i + 1 < n and expr[i + 1].isdigit()):
+            end = _scan_number(expr, i)
+            number = expr[i:end]
+            if end < n and expr[end] == "°":
+                if i > 0 and (expr[i - 1].isalpha() or expr[i - 1] == "_"):
+                    raise _ExpressionError("° 前不能紧跟函数名或变量")
+                out.append(f"({number}*pi/180)")
+                i = end + 1
+            else:
+                out.append(number)
+                i = end
+        else:
+            out.append(ch)
+            i += 1
+
+    return "".join(out)
+
+
 def evaluate_expression(expr):
     try:
-        tree = ast.parse(expr, mode="eval")
+        tree = ast.parse(_convert_degrees(expr), mode="eval")
         result = _eval_ast(tree.body)
     except SyntaxError:
         print("错误:表达式语法错误")
@@ -469,28 +514,48 @@ calculation_count = 0
 error_count = 0
 
 
-def handle_expression(history, line):
+def record_result(result):
     global calculation_count, error_count
 
-    expr = line.strip()
-    result, entry = evaluate_expression(expr)
-
+    messages = []
     if result is None:
         error_count += 1
-        check_error_easter_egg(error_count)
+        message = check_error_easter_egg(error_count)
+        if message:
+            messages.append(message)
+        return messages
+
+    message = check_easter_eggs(result)
+    if message:
+        messages.append(message)
+    calculation_count += 1
+    message = check_count_easter_egg(calculation_count)
+    if message:
+        messages.append(message)
+    error_count = 0
+    return messages
+
+
+def print_messages(messages):
+    for message in messages:
+        print(message)
+
+
+def handle_expression(history, line):
+    expr = line.strip()
+    result, entry = evaluate_expression(expr)
+    messages = record_result(result)
+
+    if result is None:
+        print_messages(messages)
         return
 
-    check_easter_eggs(result)
     history.append(entry)
     save_history(history)
-    calculation_count += 1
-    check_count_easter_egg(calculation_count)
-    error_count = 0
+    print_messages(messages)
 
 
 def run_menu_loop(history):
-    global calculation_count, error_count
-
     while True:
         show_menu()
         choice = input("请输入选项: ")
@@ -498,17 +563,14 @@ def run_menu_loop(history):
         if choice == "1":
             a, b = get_two_numbers()
             result, operator = calculate(a, b)
+            messages = record_result(result)
 
             if result is None:
-                error_count += 1
-                check_error_easter_egg(error_count)
+                print_messages(messages)
                 continue
-            check_easter_eggs(result)
             history.append((a, operator, b, result))
             save_history(history)
-            calculation_count += 1
-            check_count_easter_egg(calculation_count)
-            error_count = 0
+            print_messages(messages)
         elif choice == "2":
             show_history(history)
         elif choice == "3":
@@ -521,31 +583,25 @@ def run_menu_loop(history):
             show_about()
         elif choice == "5":
             result, operator, num = calculate_unary()
+            messages = record_result(result)
 
             if result is None:
-                error_count += 1
-                check_error_easter_egg(error_count)
+                print_messages(messages)
                 continue
-            check_easter_eggs(result)
             history.append((num, operator, None, result))
             save_history(history)
-            calculation_count += 1
-            check_count_easter_egg(calculation_count)
-            error_count = 0
+            print_messages(messages)
         elif choice == "6":
             expr = input("请输入表达式: ").strip()
             result, entry = evaluate_expression(expr)
+            messages = record_result(result)
 
             if result is None:
-                error_count += 1
-                check_error_easter_egg(error_count)
+                print_messages(messages)
                 continue
-            check_easter_eggs(result)
             history.append(entry)
             save_history(history)
-            calculation_count += 1
-            check_count_easter_egg(calculation_count)
-            error_count = 0
+            print_messages(messages)
         elif choice == "7":
             delete_history_entry(history)
         elif choice == "8":
