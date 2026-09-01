@@ -1,243 +1,211 @@
-# GitHub Study
+# Python 计算器
 
-## 📖 项目介绍
+这是我的第一个 Python 小项目。
 
-这是我学习 Git、Python 和通信工程编程的仓库。
+项目从最初只能完成简单四则运算的 CLI 计算器开始，在学习过程中一步步加入表达式计算、AST 安全解析、数学函数、历史记录、彩蛋、Tkinter GUI、角度后缀 `°` 和自动化测试，最终发展成一个功能相对完整的小型桌面计算器。
 
-## 📚 学习内容
+> 本仓库也用于记录我学习 Git、GitHub、Markdown 和 Python 的过程。
 
-- Git
-- GitHub
-- Markdown
-- Python
+## 项目特色
 
-## 🎯 我的目标
-
-- 学会 Git
-- 学会 Python
-- 做自己的项目
-
-## 📝 学习记录
-
-- 2026-08-03：开始使用 VS Code 学习 Git
-- 完成第一次 GitHub 上传
-
-# 🧮 Python 简单计算器  2026.8.29
-
-这是我的第一个 Python 小项目，也是我用来学习 Python、Git 和 GitHub 的练习项目。
-
-目前已经从最基础的四则运算，逐步增加了历史记录、错误处理、计算统计、彩蛋以及 Windows `.exe` 打包等功能。
-
-
-# 🧮 Python 简单计算器 · 2026.09.01
-
-这是我的第一个 Python 小项目，也是我用来学习 Python、Git 和 GitHub 的练习项目。
-
-项目最初只是一个简单的四则运算计算器，后来不断增加了历史记录、一元运算、表达式计算、数学函数、错误处理、计算统计、数字彩蛋、JSON 持久化以及 Windows `.exe` 打包等功能。
-
-目前项目同时拥有：
-
-- 命令行 REPL 计算器界面
-- Tkinter 图形化计算器（GUI）
+- AST 白名单表达式解析，不使用 `eval()` / `exec()`
+- CLI 与 GUI 共用同一套计算核心
+- CLI 与 GUI 共用彩蛋和计数机制
+- 历史记录 JSON 持久化
+- `°` 角度后缀
 - pytest 自动化测试
+- PyInstaller Windows EXE 打包支持
 
-这个项目会继续作为我的 Python 学习项目进行迭代。
+## 功能
 
-## ✨ 当前功能
+### 基础计算
 
-### 基础运算
+- 加法 `+`
+- 减法 `-`
+- 乘法 `*`
+- 除法 `/`
+- 取余 `%`
+- 整除 `//`
+- 幂运算 `**`
 
-- ➕ 加法 `+`
-- ➖ 减法 `-`
-- ✖️ 乘法 `*`
-- ➗ 除法 `/`
-- `%` 取余
-- `//` 整除
-- `**` 幂运算
-
-### 一元运算
+### 数学函数与常量
 
 - `sqrt(x)` 开平方根
 - `abs(x)` 绝对值
+- `sin(x)` / `cos(x)` / `tan(x)` 三角函数
+- `log(x)` 以 10 为底的对数
+- `ln(x)` 自然对数
+- `pi` 圆周率
+- `e` 自然常数
 
 ### 表达式计算
 
-支持直接输入复杂数学表达式，例如：
+支持直接输入复杂表达式，支持括号和正常的运算优先级：
 
 ```text
-10 + 5 * 2
-(10 + 5) * 2
-2 ** 3 ** 2
-sqrt(9) + 1
+12 + 5 * 2
+sqrt(144)
 sin(pi / 2)
-log(100)
-支持：
+sin(30°)
+```
 
-括号
-运算符优先级
-幂运算右结合
-单目正负号
-嵌套函数
-pi
-e
-sin()
-cos()
-tan()
-log()（以 10 为底）
-ln()（自然对数）
+### ° 角度后缀
 
-三角函数使用弧度制。
+`°` 是数字字面量的角度后缀，会把前面的数字从角度换算为弧度后再参与计算：
 
-🛡️ 表达式安全解析
+```text
+30°        -> π/6
+sin(30°)   -> 0.5
+cos(60°)   -> 0.5
+tan(45°)   -> 1
+```
 
-表达式计算没有使用 eval() 或 exec()。
+- 函数形式需要写成 `sin(30°)`
+- 不支持 `sin30°`、`sqrt9°` 这类标识符与数字 `°` 的隐式并置
+- 没有 `°` 时，`sin` / `cos` / `tan` 仍然使用弧度制，例如 `sin(pi/2) = 1`
 
-程序使用 Python ast 模块解析表达式，并通过白名单限制允许的语法节点，只允许预先定义的数字、运算符、数学函数和常量。
+## 安全表达式解析
 
-例如：
+表达式计算**没有使用** `eval()` 或 `exec()`。
 
-__import__('os')
-open('x')
-math.sin(1)
-foo(1)
+用户输入首先通过 Python `ast` 模块解析，然后由白名单限制允许的节点、运算符、函数和常量。这样可以避免直接执行用户输入，并将表达式能力限制在项目明确允许的范围内。
 
-等不在白名单中的表达式都会被拒绝。
+不在白名单中的表达式（如 `__import__('os')`、`open('x')`、`math.sin(1)`、`foo(1)`）都会被拒绝。
 
-📜 历史记录
-自动保存计算历史
-支持二元运算、一元运算和表达式计算
-程序重新启动后仍然可以读取历史记录
-支持清空历史记录
-历史记录使用 JSON 文件保存
+## 历史记录
 
-历史记录文件：
+- CLI 与 GUI 共用同一份历史记录
+- 支持查看、删除、撤销和清空历史记录
+- 使用 JSON 文件持久化（`history.json`）
+- 普通 Python 运行时，历史记录保存在项目目录中的 `history.json`
+- PyInstaller frozen 模式下，使用用户 `AppData` 下的 `calculator` 目录保存
 
-python/history.json
+`history.json` 已加入 `.gitignore`，不会提交到 Git。
 
-该文件已加入 .gitignore，不会上传到 GitHub。
+## 彩蛋
 
-⚠️ 错误处理
+项目内置了一些彩蛋，某些特殊结果或计数会触发特殊输出。例如：
 
-程序对常见错误进行了处理，包括：
+- `42`
+- `69`
+- `2077`
+- `114514`
+- `1919810`
 
-除数为 0
-0 的负数次幂
-负数进行非整数次幂
-负数开平方根
-log() / ln() 非法参数
-数值溢出
-无穷大 / 非数值结果
-非法表达式
-过于复杂的表达式
-错误的数字输入
-Ctrl+C / Ctrl+Z 等中断
+此外还有计算次数和连续错误次数相关的彩蛋，等你慢慢发现。
 
-程序尽可能避免因为用户输入错误而直接崩溃。
+## GUI
 
-🔢 计算统计
-统计当前运行期间的计算次数
-连续错误次数统计
-计算次数彩蛋
-连续错误彩蛋
-🥚 数字彩蛋
+使用 Tkinter 和 `ttk`（`clam` 主题）构建的简洁图形界面，包含：
 
-程序中加入了一些我自己设计的数字彩蛋。
+- 表达式与结果显示区
+- 数字、运算符、数学函数和 `°` 按钮
+- 历史记录窗口
+- 彩蛋提示
+- 关于窗口（含作者信息）
 
-某些特殊计算结果会触发特殊输出。
+支持键盘操作：
 
-如果你发现程序突然说了一些奇怪的话，那大概率不是程序坏了。😂
+- `Enter` 计算
+- `Backspace` 退格
+- `Esc` 清空
 
-🪟 Windows .exe
+## 运行方法
 
-项目使用 PyInstaller 打包为 Windows .exe 程序，可以直接运行。
+需要 Python 3.14 或兼容版本，使用 `uv` 管理。
 
-🚀 如何运行
-方法一：使用 Python（命令行 REPL）
+### 命令行（CLI）
 
-需要 Python 3.14 或兼容版本。
-
-进入 python 目录后运行：
-
+```bash
+cd python
 uv run python calculator.py
-方法二：使用 Python（图形界面 GUI）
+```
 
-进入 python 目录后运行：
+### 图形界面（GUI）
 
+```bash
+cd python
 uv run python gui.py
-方法三：直接运行 Windows 程序
+```
 
-项目已经使用 PyInstaller 打包。
+## 打包 Windows EXE
 
-进入：
+项目支持使用 PyInstaller 自行打包 Windows GUI 程序：
 
-dist/
+```bash
+cd python
+uv run pyinstaller --noconsole --onefile --name Calculator gui.py
+```
 
-双击：
+输出文件位于 `python/dist/Calculator.exe`。
 
-calculator.exe
+> 当前仓库未发布打包好的 EXE，如需使用请自行打包。
 
-即可运行。
+## 测试
 
-注意：当前仓库中的 dist/calculator.exe 是早期打包的旧版命令行（CLI）程序，并不包含最新的图形化界面（GUI）。如需 GUI 的 .exe，需要以 gui.py 为入口重新打包。
+当前共有 229 个测试：
 
-📁 项目结构
+```text
+229 passed
+0 failed
+0 warnings
+```
+
+测试覆盖：
+
+- 表达式计算
+- AST 安全边界
+- 数学函数
+- `°` 角度运算
+- 历史记录
+- 彩蛋与计数机制
+- GUI 行为
+- 键盘交互
+- 关于窗口
+
+运行测试：
+
+```bash
+cd python
+uv run pytest
+```
+
+## 项目结构
+
+```text
+README.md
+AGENTS.md
 python/
 ├── calculator.py
 ├── gui.py
 ├── 计算器获取数字部分.py
 ├── pyproject.toml
 ├── uv.lock
-├── tests/
-│   ├── test_calculator.py
-│   └── test_gui.py
-├── calculator.spec
-├── dist/
-│   └── calculator.exe
+├── .python-version
 ├── .gitignore
-└── README.md
+├── src/python/__init__.py
+└── tests/
+    ├── test_calculator.py
+    └── test_gui.py
+```
 
-运行计算器后产生的：
+## 项目定位
 
-history.json
+这是一个个人 Python 学习项目，重点不是追求商业计算器的复杂功能，而是通过一个实际项目学习 Python、Git、GitHub、测试、GUI 开发、代码组织和软件迭代。
 
-不会被 Git 跟踪。
+## 项目目的
 
-📚 项目目的
+这个项目主要用于记录我学习 Python、Git 和 GitHub 的过程，通过学习过程中不断给计算器增加功能来练习：
 
-这个项目主要用于记录我学习 Python、Git 和 GitHub 的过程。
+- Python 基础语法与异常处理
+- 文件读写与 JSON
+- `pathlib`、`math`、`ast`
+- 表达式解析与安全白名单
+- `uv`
+- Git 与 GitHub
+- PyInstaller 与 Windows EXE 打包
 
-通过不断给计算器增加功能，我逐渐学习了：
-
-Python 基础语法
-条件判断
-循环
-函数
-异常处理
-列表与元组
-文件读写
-JSON
-pathlib
-math
-ast
-表达式解析
-安全白名单
-uv
-Git
-GitHub
-PyInstaller
-Windows .exe 打包
-
-相比一开始的简单四则运算，这个项目已经逐渐变成了一个功能比较完整的小型命令行计算器。
-
-这个项目还会继续更新。
-🔮 后续计划
- 增加更完善的计算功能
- 优化代码结构
- 使用字典重构彩蛋系统
- 进一步优化 Windows 版本（含 GUI 打包）
-📌 Version
-
-Version 1.2
+## 作者
 
 作者：dyy
 
