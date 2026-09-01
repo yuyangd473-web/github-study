@@ -35,6 +35,12 @@
 
 项目最初只是一个简单的四则运算计算器，后来不断增加了历史记录、一元运算、表达式计算、数学函数、错误处理、计算统计、数字彩蛋、JSON 持久化以及 Windows `.exe` 打包等功能。
 
+目前项目同时拥有：
+
+- 命令行 REPL 计算器界面
+- Tkinter 图形化计算器（GUI）
+- pytest 自动化测试
+
 这个项目会继续作为我的 Python 学习项目进行迭代。
 
 ## ✨ 当前功能
@@ -144,15 +150,21 @@ Ctrl+C / Ctrl+Z 等中断
 🪟 Windows .exe
 
 项目使用 PyInstaller 打包为 Windows .exe 程序，可以直接运行。
+
 🚀 如何运行
-方法一：使用 Python
+方法一：使用 Python（命令行 REPL）
 
 需要 Python 3.14 或兼容版本。
 
 进入 python 目录后运行：
 
 uv run python calculator.py
-方法二：直接运行 Windows 程序
+方法二：使用 Python（图形界面 GUI）
+
+进入 python 目录后运行：
+
+uv run python gui.py
+方法三：直接运行 Windows 程序
 
 项目已经使用 PyInstaller 打包。
 
@@ -166,12 +178,18 @@ calculator.exe
 
 即可运行。
 
+注意：当前仓库中的 dist/calculator.exe 是早期打包的旧版命令行（CLI）程序，并不包含最新的图形化界面（GUI）。如需 GUI 的 .exe，需要以 gui.py 为入口重新打包。
+
 📁 项目结构
 python/
 ├── calculator.py
+├── gui.py
 ├── 计算器获取数字部分.py
 ├── pyproject.toml
 ├── uv.lock
+├── tests/
+│   ├── test_calculator.py
+│   └── test_gui.py
 ├── calculator.spec
 ├── dist/
 │   └── calculator.exe
@@ -216,9 +234,7 @@ Windows .exe 打包
  增加更完善的计算功能
  优化代码结构
  使用字典重构彩蛋系统
- 制作图形化界面（GUI）
- 进一步优化 Windows 版本
- 增加自动化测试
+ 进一步优化 Windows 版本（含 GUI 打包）
 📌 Version
 
 Version 1.2
